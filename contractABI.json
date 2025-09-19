@@ -1,0 +1,16 @@
+[
+  {
+    "inputs": [],
+    "name": "getBalance",
+    "outputs": [{"type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"name": "amount", "type": "uint256"}],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "payable", 
+    "type": "function"
+  }
+]
