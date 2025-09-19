@@ -85,6 +85,7 @@
         <!-- PASSWORD CREATION SCREEN -->
         <div id="password-screen" class="screen">
             <div class="card">
+
                 <div class="header">
                     <h2>🔒 Create Your Secure Password</h2>
                     <p>Create a strong password to protect your wallet</p>
@@ -288,6 +289,7 @@
                         </div>
                     </div>
 
+
                     <!-- SEND TAB -->
                     <div id="send-tab" class="tab-pane">
                         <h3>Send Cryptocurrency</h3>
@@ -460,12 +462,12 @@
   console.log("🔥 Loading Firebase v8...");
   
   const firebaseConfig = {
-    apiKey: " ",
-    authDomain: " ",
-    projectId: " ",
-    storageBucket: " ",
-    messagingSenderId: " ",
-    appId: " "
+    apiKey: "AIzaSyD0U3BxRUpNUI6cHQX7RJQ5KDu9R1AaJA",
+    authDomain: "wallet-742b9.firebaseapp.com",
+    projectId: "wallet-742b9",
+    storageBucket: "wallet-742b9.firebasestorage.app",
+    messagingSenderId: "962945593813",
+    appId: "1:962945593813:web:407c19766f53b52e010d5c"
   };
 
   // Initialize Firebase
@@ -489,12 +491,35 @@
     }
   };
 </script>
+
+
+
+
+
+
+<!-- Blockchain Test Section (add this in your dashboard somewhere) -->
+<div style="background: #f0f8ff; padding: 20px; margin: 20px; border-radius: 10px;">
+    <h3>🚀 Blockchain Connection Test</h3>
+    <div id="walletAddress">Not Connected</div>
+    <div id="contractBalance">No Balance</div>
+    
+    <button id="connectWalletBtn" style="padding: 10px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 5px;">
+        🦊 Connect MetaMask
+    </button>
+    
+    <div style="margin-top: 10px;">
+        <input id="recipient" placeholder="Recipient Address" style="width: 200px; margin: 5px;">
+        <input id="amount" placeholder="Amount in ETH" style="width: 100px; margin: 5px;">
+        <button id="sendTxBtn" style="padding: 10px; margin: 5px; background: #2196F3; color: white; border: none; border-radius: 5px;">
+            💸 Send ETH
+        </button>
+    </div>
+</div>
+<!-- In index.html, right before blockchain.js -->
+<script type="module">
+  import "https://cdn.jsdelivr.net/npm/ethers@6.8.3/dist/ethers.esm.min.js";
+</script>
+<script src="blockchain.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
-
-</script>
-</script>
-</body>
-</html>
-
-
