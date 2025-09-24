@@ -1,6 +1,9 @@
 // Complete SecureWallet Application with Firebase Integration
 class SecureWallet {
     constructor() {
+        this.resendTimer = null;
+        this.resendCountdown = 60; // 60 seconds cooldown
+        this.connectedWallet = null;
         this.currentScreen = 'email-screen';
         this.generatedOTP = null;
         this.otpExpiry = null;
@@ -36,6 +39,84 @@ class SecureWallet {
         this.loadSampleTransactions();
         console.log('SecureWallet ready!');
     }
+    // MetaMask connection methods
+async connectMetaMask() {
+    try {
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ 
+                method: 'eth_requestAccounts' 
+            });
+            
+            this.connectedWallet = accounts[0];
+            this.updateMetaMaskUI(true);
+            this.showToast('MetaMask connected successfully!', 'success');
+            
+            // Update wallet address display
+            const walletAddressDisplay = document.getElementById('walletAddress');
+            if (walletAddressDisplay) {
+                walletAddressDisplay.textContent = this.connectedWallet;
+            }
+        } else {
+            this.showToast('MetaMask is not installed. Please install MetaMask extension.', 'error');
+        }
+    } catch (error) {
+        console.error('MetaMask connection failed:', error);
+        this.showToast('Failed to connect to MetaMask', 'error');
+    }
+}
+
+async disconnectMetaMask() {
+    console.log('disconnectMetaMask handler triggered');
+    try {
+        // Clear connected wallet
+        this.connectedWallet = null;
+        this.updateMetaMaskUI(false);
+        
+        // Update wallet address display
+        const walletAddressDisplay = document.getElementById('walletAddress');
+        if (walletAddressDisplay) {
+            walletAddressDisplay.textContent = 'Not Connected';
+        }
+        
+        // Clear contract balance
+        const contractBalanceDisplay = document.getElementById('contractBalance');
+        if (contractBalanceDisplay) {
+            contractBalanceDisplay.textContent = 'No Balance';
+        }
+        
+        this.showToast('MetaMask disconnected successfully!', 'success');
+    } catch (error) {
+        console.error('MetaMask disconnection failed:', error);
+        this.showToast('Failed to disconnect MetaMask', 'error');
+    }
+}
+
+
+async deleteMetaMaskAccount() {
+  // new delete account code here
+}
+
+
+updateMetaMaskUI(isConnected) {
+    const connectBtn = document.getElementById('connectWalletBtn');
+    const disconnectBtn = document.getElementById('disconnectWalletBtn');
+if (disconnectBtn) {
+  console.log('Disconnect button found — attaching listener');
+  disconnectBtn.addEventListener('click', this.disconnectMetaMask.bind(this));
+}
+
+    
+    if (connectBtn && disconnectBtn) {
+        if (isConnected) {
+            connectBtn.style.display = 'none';
+            disconnectBtn.style.display = 'inline-block';
+        } else {
+            connectBtn.style.display = 'inline-block';
+            disconnectBtn.style.display = 'none';
+        }
+    }
+}
+
 
     // 🔥 FIREBASE METHODS
     async saveUserToFirebase(userData) {
@@ -165,6 +246,12 @@ class SecureWallet {
         if (verifyOtpBtn) {
             verifyOtpBtn.addEventListener('click', () => this.verifyOTP());
         }
+        // Resend OTP button
+        const resendOtpBtn = document.getElementById('resend-otp-btn');
+        if (resendOtpBtn) {
+      resendOtpBtn.addEventListener('click', this.resendOTP.bind(this));
+        }
+
 
         // OTP input handling
         const otpInputs = document.querySelectorAll('.otp-input');
@@ -172,6 +259,69 @@ class SecureWallet {
             input.addEventListener('input', (e) => this.handleOTPInput(e, index));
             input.addEventListener('keydown', (e) => this.handleOTPKeydown(e, index));
         });
+        
+
+        // Global variable to store generated OTP
+let generatedOTP = "";
+
+// Send OTP function
+function sendOTP() {
+    document.getElementById('otp-section').classList.remove('hidden'); // You should use your actual show logic
+    
+
+
+    const userEmail = document.getElementById('user-email').value;
+    if (!userEmail) {
+        alert("Please enter an email address");
+        return;
+    }
+
+    // Generate OTP
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const templateParams = {
+        to_email: userEmail,
+        otp_code: generatedOTP
+    };
+
+    emailjs.send("your_service_id", "your_template_id", templateParams, "your_public_key")
+        .then(() => {
+            alert("OTP sent to " + userEmail);
+            document.getElementById("otp-section").style.display = "block";
+        })
+        .catch((error) => {
+            console.error("Error sending OTP:", error);
+            alert("Failed to send OTP. Try again.");
+        });
+}
+
+// Verify OTP function
+function verifyOTP() {
+    const otpInputs = document.querySelectorAll(".otp-input");
+    let enteredOTP = "";
+    otpInputs.forEach(input => enteredOTP += input.value);
+
+    if (enteredOTP === generatedOTP) {
+        alert("✅ Email verified successfully!");
+    } else {
+        alert("❌ Invalid OTP. Please try again.");
+    }
+}
+
+// OTP input handling
+function handleOTPInput(e, index) {
+    if (e.target.value && index < 5) {
+        document.querySelectorAll('.otp-input')[index + 1].focus();
+    }
+}
+
+function handleOTPKeydown(e, index) {
+    if (e.key === "Backspace" && index > 0 && !e.target.value) {
+        document.querySelectorAll('.otp-input')[index - 1].focus();
+    }
+}
+
+    
 
         // Password creation
         const passwordInput = document.getElementById('password');
@@ -240,6 +390,22 @@ class SecureWallet {
     }
 
     setupDashboardEventListeners() {
+        // MetaMask connection handlers
+const connectWalletBtn = document.getElementById('connectWalletBtn');
+const disconnectWalletBtn = document.getElementById('disconnectWalletBtn');
+
+if (connectWalletBtn) {
+    connectWalletBtn.addEventListener('click', this.connectMetaMask.bind(this));
+}
+if (disconnectWalletBtn) {
+    disconnectWalletBtn.addEventListener('click', this.disconnectMetaMask.bind(this));
+}
+const deleteAccountBtn = document.getElementById('delete-account-btn');
+if (deleteAccountBtn) {
+  deleteAccountBtn.addEventListener('click', () => this.deleteMetaMaskAccount());
+}
+
+
         // Dashboard navigation
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
@@ -254,7 +420,7 @@ class SecureWallet {
         // Receive functionality
         const generatePaymentQRBtn = document.getElementById('generate-payment-qr-btn');
         const downloadQRBtn = document.getElementById('download-qr-btn');
-        const copyReceiveAddressBtn = document.getElementById('copy-receive-address-btn');
+        //const copyReceiveAddressBtn = document.getElementById('copy-receive-address-btn');
         const requestCurrency = document.getElementById('request-currency');
 
         if (generatePaymentQRBtn) {
@@ -265,9 +431,9 @@ class SecureWallet {
             downloadQRBtn.addEventListener('click', () => this.downloadQRCode());
         }
 
-        if (copyReceiveAddressBtn) {
-            copyReceiveAddressBtn.addEventListener('click', () => this.copyReceiveAddress());
-        }
+        //if (copyReceiveAddressBtn) {
+           // copyReceiveAddressBtn.addEventListener('click', () => this.copyReceiveAddress());
+       // }
 
         if (requestCurrency) {
             requestCurrency.addEventListener('change', () => this.updateReceiveAddress());
@@ -346,19 +512,19 @@ class SecureWallet {
             
             // REPLACE WITH YOUR ACTUAL EMAILJS CREDENTIALS
             await emailjs.send(
-                 "",
-                ",    // Replace with your Template ID
+                "service_rt7b701",
+                "template_qvf00iu",    // Replace with your Template ID
                 {
                     to_email: email,
                     user_name: email.split('@')[0],
                     otp_code: this.generatedOTP
                 },
-                ""      // Replace with your Public Key
+                "Jpc-PtSR0ue1Ap8xg"      // Replace with your Public Key
             );
 
             console.log('Email sent successfully');
             this.showOTPSection();
-            this.startResendCooldown();
+            this.startResendCountdownTimer();
             this.showToast('OTP sent to your email successfully!', 'success');
             this.hideError('email-error');
             
@@ -421,6 +587,10 @@ class SecureWallet {
 
     showOTPSection() {
         const otpSection = document.getElementById('otp-section');
+console.log(otpSection);
+const otpInputs = otpSection ? otpSection.querySelectorAll('.otp-input') : null;
+console.log(otpInputs);
+
         if (otpSection) {
             otpSection.classList.remove('hidden');
             const firstInput = document.querySelector('.otp-input');
@@ -430,13 +600,64 @@ class SecureWallet {
         }
     }
 
-    startResendCooldown() {
-        this.resendCooldown = true;
-        setTimeout(() => {
-            this.resendCooldown = false;
-            console.log('Resend cooldown ended');
-        }, 60000);
+    startResendCountdownTimer() {
+    this.resendCooldown = true;
+    this.resendCountdown = 60;
+    
+    // Show resend section
+    const resendSection = document.getElementById('resend-section');
+    const resendBtn = document.getElementById('resend-otp-btn');
+    const countdownSpan = document.getElementById('countdown');
+    const resendText = document.getElementById('resend-text');
+    
+    if (resendSection) resendSection.style.display = 'block';
+    if (resendBtn) resendBtn.disabled = true;
+    
+    // Clear any existing timer
+    if (this.resendTimer) {
+        clearInterval(this.resendTimer);
     }
+    
+    // Start countdown
+    this.resendTimer = setInterval(() => {
+        this.resendCountdown--;
+        
+        if (countdownSpan) {
+            countdownSpan.textContent = this.resendCountdown;
+        }
+        
+        if (this.resendCountdown <= 0) {
+            // Enable resend
+            this.resendCooldown = false;
+            if (resendBtn) {
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = '<span>Resend OTP</span>';
+            }
+            
+            // Clear timer
+            clearInterval(this.resendTimer);
+            this.resendTimer = null;
+        }
+    }, 1000);
+}
+async resendOTP() {
+    console.log('Resending OTP...');
+    
+    // Reset countdown display
+    const resendSection = document.getElementById('resend-section');
+    if (resendSection) resendSection.style.display = 'none';
+    
+    // Clear any existing timer
+    if (this.resendTimer) {
+        clearInterval(this.resendTimer);
+        this.resendTimer = null;
+    }
+    
+    // Call sendOTP again
+    await this.sendOTP();
+}
+
+
 
     handleOTPInput(event, index) {
         const input = event.target;
@@ -707,6 +928,35 @@ SecureWallet Team`;
             userEmailDisplay.textContent = this.userData.email;
         }
     }
+    async initializeDashboard() {
+    // ... existing code ...
+    
+    // Check if MetaMask was previously connected
+    this.checkMetaMaskConnection();
+    
+    // ... rest of method ...
+}
+
+// Add this new method
+async checkMetaMaskConnection() {
+    try {
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                this.connectedWallet = accounts[0];
+                this.updateMetaMaskUI(true);
+                
+                const walletAddressDisplay = document.getElementById('walletAddress');
+                if (walletAddressDisplay) {
+                    walletAddressDisplay.textContent = this.connectedWallet;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking MetaMask connection:', error);
+    }
+}
+
 
     updateBalanceDisplay() {
         const { BTC, ETH, USDT } = this.userData.balances;
@@ -1434,5 +1684,4 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing SecureWallet...');
     app = new SecureWallet();
 });
-
 
