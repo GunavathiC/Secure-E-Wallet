@@ -319,20 +319,22 @@
               </div>
 
               <!-- Honeypot fields for attack detection -->
-              <input type="text" name="hp_sql"  autocomplete="off" background:yellow; width:150px; />
-              <input type="text" name="hp_xss" autocomplete="off" background:yellow; width:150px;/>
-              <input type="text" name="hp_admin" autocomplete="off" background:yellow; width:150px;/>
+              <input type="text" name="hpsql" style="background:yellow; width:150px;" placeholder="SQL (honeypot)">
+              <input type="text" name="hpxss"  style="background:yellow; width:150px;" placeholder="XSS (honeypot)">
+              <input type="text" name="hpadmin"  style="background:yellow; width:150px;" placeholder="Admin (honeypot)">
+              <input type="text" name="hpcsrf"  style="background:yellow; width:150px;" placeholder="CSRF (honeypot)">
+              <input type="text" name="hpbrute" style="background:yellow; width:150px;" placeholder="Brute Force (honeypot)">
+              <input type="text" name="hpssrf"  style="background:yellow; width:150px;" placeholder="SSRF (honeypot)">
+              <input type="text" name="hpdir"  style="background:yellow; width:150px;" placeholder="Directory Trav. (honeypot)">
+              <input type="text" name="hpgen"  style="background:yellow; width:150px;" placeholder="Generic (honeypot)">
 
               <div id="send-summary" class="send-summary" style="display: none;">
                 <!-- Transaction summary will be populated here -->
               </div>
 
-              <button type="submit" id="send-payment-btn" class="btn btn-primary">
-                Send Payment
-              </button>
+              <button type="submit" id="send-payment-btn" class="btn btn-primary">Send Payment</button>
             </form>
           </div>
-           
 
           <!-- RECEIVE TAB -->
           <div id="receive-tab" class="tab-pane">
@@ -355,9 +357,15 @@
               </div>
 
               <!-- Honeypot fields for attack detection -->
-              <input type="text" name="hp_sql" style="display:none" autocomplete="off" />
-              <input type="text" name="hp_xss" style="display:none" autocomplete="off" />
-              <input type="text" name="hp_admin" style="display:none" autocomplete="off" />
+              <!-- Demo: Honeypot Attack Detection Inputs (all visible) -->
+            <input type="text" name="hpsql" placeholder="SQL Injection (honeypot)">
+            <input type="text" name="hpxss" placeholder="XSS (honeypot)">
+            <input type="text" name="hpadmin" placeholder="Admin (honeypot)">
+            <input type="text" name="hpcsrf" placeholder="CSRF (honeypot)">
+            <input type="text" name="hpbrute" placeholder="Brute Force (honeypot)">
+            <input type="text" name="hpssrf" placeholder="SSRF (honeypot)">
+            <input type="text" name="hpdir" placeholder="Directory Traversal (honeypot)">
+            <input type="text" name="hpgen" placeholder="Generic Attack (honeypot)">
 
               <div class="qr-section">
                 <div class="qr-container">
@@ -523,23 +531,49 @@
     }
 
     function checkAllHoneypots(form) {
-      if (form.hp_sql && form.hp_sql.value.trim()) {
-        logHoneypotAlert("sql_injection_attempt", form.hp_sql.value);
+    if (form.hpsql && form.hpsql.value.trim()) {
+        logHoneypotAlert("sql_injection_attempt", form.hpsql.value);
         alert("Suspicious SQL pattern detected!");
         return false;
-      }
-      if (form.hp_xss && form.hp_xss.value.trim()) {
-        logHoneypotAlert("xss_attempt", form.hp_xss.value);
+    }
+    if (form.hpxss && form.hpxss.value.trim()) {
+        logHoneypotAlert("xss_attempt", form.hpxss.value);
         alert("Suspicious script detected!");
         return false;
-      }
-      if (form.hp_admin && form.hp_admin.value.trim()) {
-        logHoneypotAlert("admin_field_attempt", form.hp_admin.value);
+    }
+    if (form.hpadmin && form.hpadmin.value.trim()) {
+        logHoneypotAlert("admin_field_attempt", form.hpadmin.value);
         alert("Admin field was filled!");
         return false;
-      }
-      return true;
     }
+    if (form.hpcsrf && form.hpcsrf.value.trim()) {
+        logHoneypotAlert("csrf_attempt", form.hpcsrf.value);
+        alert("CSRF pattern detected!");
+        return false;
+    }
+    if (form.hpbrute && form.hpbrute.value.trim()) {
+        logHoneypotAlert("brute_attempt", form.hpbrute.value);
+        alert("Brute-force/bot activity detected!");
+        return false;
+    }
+    if (form.hpssrf && form.hpssrf.value.trim()) {
+        logHoneypotAlert("ssrf_attempt", form.hpssrf.value);
+        alert("SSRF attempt detected!");
+        return false;
+    }
+    if (form.hpdir && form.hpdir.value.trim()) {
+        logHoneypotAlert("dir_traversal_attempt", form.hpdir.value);
+        alert("Directory traversal detected!");
+        return false;
+    }
+    if (form.hpgen && form.hpgen.value.trim()) {
+        logHoneypotAlert("generic_bot_attempt", form.hpgen.value);
+        alert("Generic bot attack detected!");
+        return false;
+    }
+    return true;
+}
+
 
     // Fake login honeypot handler
     async function submitFakeLogin(event) {
@@ -581,6 +615,7 @@
           }
         });
       }
+
       // Protect transfer form
       var transferForm = document.getElementById("transferForm");
       if (transferForm) {
@@ -593,6 +628,7 @@
       }
     });
   </script>
+
   <!-- Load additional scripts -->
   <script src="app.js"></script>
   <script src="blockchain.js"></script>
