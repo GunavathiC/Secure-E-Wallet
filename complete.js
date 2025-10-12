@@ -9,24 +9,149 @@ function logHoneypotAlert(type, details) {
   }
 }
 
+function showError(message) {
+  const errorDivId = 'honeypot-error';
+  let errorDiv = document.getElementById(errorDivId);
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.id = errorDivId;
+    errorDiv.style.color = 'red';
+    errorDiv.style.marginTop = '10px';
+    sendForm.appendChild(errorDiv);
+  }
+  errorDiv.textContent = message;
+}
+
 function checkAllHoneypots(form) {
-  if (form.hp_sql && form.hp_sql.value.trim()) {
-    logHoneypotAlert("sql_injection_attempt", form.hp_sql.value);
+  const honeypots = {
+    hpsql: "Suspicious SQL pattern detected!",
+    hpxss: "Suspicious script detected!",
+    hpadmin: "Admin field filled!",
+    hpcsrf: "CSRF pattern detected!",
+    hpbrute: "Brute-force bot activity detected!",
+    hpssrf: "SSRF attempt detected!",
+    hpdir: "Directory traversal detected!",
+    hpgen: "Generic bot attack detected!"
+  };
+
+  for (const key in honeypots) {
+    if (form[key] && form[key].value.trim() !== "") {
+      showError(honeypots[key]);
+      console.log('Honeypot triggered:', key);
+      return false;
+    }
+  }
+  // Clear error if no honeypot detected
+  const errorDiv = document.getElementById('honeypot-error');
+  if (errorDiv) errorDiv.textContent = '';
+  return true;
+}
+
+function checkAllHoneypots(form) {
+  if (form.hpsql && form.hpsql.value.trim()) {
+    console.log("Honeypot triggered: SQL Injection");
     alert("Suspicious SQL pattern detected!");
     return false;
   }
-  if (form.hp_xss && form.hp_xss.value.trim()) {
-    logHoneypotAlert("xss_attempt", form.hp_xss.value);
+  if (form.hpxss && form.hpxss.value.trim()) {
+    console.log("Honeypot triggered: XSS");
     alert("Suspicious script detected!");
     return false;
   }
-  if (form.hp_admin && form.hp_admin.value.trim()) {
-    logHoneypotAlert("admin_field_attempt", form.hp_admin.value);
-    alert("Admin field was filled!");
+  if (form.hpadmin && form.hpadmin.value.trim()) {
+    console.log("Honeypot triggered: Admin Field");
+    alert("Admin field filled!");
     return false;
+  }
+  if (form.hpcsrf && form.hpcsrf.value.trim()) {
+    console.log("Honeypot triggered: CSRF");
+    alert("CSRF pattern detected!");
+    return false;
+  }
+  if (form.hpbrute && form.hpbrute.value.trim()) {
+    console.log("Honeypot triggered: Brute Force");
+    alert("Brute-force/bot activity detected!");
+    return false;
+  }
+  if (form.hpssrf && form.hpssrf.value.trim()) {
+    console.log("Honeypot triggered: SSRF");
+    alert("SSRF attempt detected!");
+    return false;
+  }
+  if (form.hpdir && form.hpdir.value.trim()) {
+    console.log("Honeypot triggered: Dir Traversal");
+    alert("Directory traversal detected!");
+    return false;
+  }
+  if (form.hpgen && form.hpgen.value.trim()) {
+    console.log("Honeypot triggered: Generic");
+    alert("Generic bot attack detected!");
+    return false;
+  }
+  console.log("No honeypots triggered");
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const sendForm = document.getElementById('sendForm');
+  if (!sendForm) return;
+
+  sendForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (!checkAllHoneypots(sendForm)) {
+      console.log('Honeypot detected - submission blocked.');
+      return false;
+    }
+
+    // If honeypots clear, proceed to process payment
+    if (typeof sendForm.processSendPayment === 'function') {
+      sendForm.processSendPayment();
+    } else {
+      console.log('processSendPayment() not found.');
+    }
+  });
+});
+
+function checkAllHoneypots(form) {
+  const honeypots = {
+    hpsql: "Suspicious SQL pattern detected!",
+    hpxss: "Suspicious script detected!",
+    hpadmin: "Admin field filled!",
+    hpcsrf: "CSRF pattern detected!",
+    hpbrute: "Brute-force bot activity detected!",
+    hpssrf: "SSRF attempt detected!",
+    hpdir: "Directory traversal detected!",
+    hpgen: "Generic bot attack detected!"
+  };
+
+  for (const key in honeypots) {
+    if (form[key] && form[key].value.trim() !== '') {
+      alert(honeypots[key]);
+      return false;
+    }
   }
   return true;
 }
+
+
+
+document.getElementById('sendForm').onsubmit = function(event) {
+if (sendForm) {
+  
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (!checkAllHoneypots(this)) {
+      return false;
+    }
+
+    this.processSendPayment(); // Your existing payment function
+  };
+}
+
+
 
 // SecureWallet Class
 class SecureWallet {
@@ -1028,4 +1153,10 @@ SECURITY WARNINGS:
 // Initialize SecureWallet when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.secureWallet = new SecureWallet();
+});
+
+document.getElementById('send-payment-form').addEventListener('submit', function(event) {
+    if (!checkAllHoneypots(this)) {
+        event.preventDefault();  // stops submit/redirect
+    }
 });
