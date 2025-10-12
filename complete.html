@@ -11,8 +11,7 @@
   
   <!-- QRCode.js Library with fallback -->
   <script
-    src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"
-    onerror="this.onerror=null; this.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'"></script>
+    src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"onerror="this.onerror=null; this.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'"></script>
   
   <!-- Firebase v8 SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -333,6 +332,7 @@
               </button>
             </form>
           </div>
+           
 
           <!-- RECEIVE TAB -->
           <div id="receive-tab" class="tab-pane">
@@ -581,7 +581,6 @@
           }
         });
       }
-
       // Protect transfer form
       var transferForm = document.getElementById("transferForm");
       if (transferForm) {
@@ -594,7 +593,6 @@
       }
     });
   </script>
-
   <!-- Load additional scripts -->
   <script src="app.js"></script>
   <script src="blockchain.js"></script>
